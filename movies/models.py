@@ -44,7 +44,7 @@ class MovieGenre(models.Model):
     genre = models.ForeignKey('Genre', on_delete = models.CASCADE)
     movie = models.ForeignKey('Movie', on_delete = models.CASCADE)
     class Meta:
-        db_table = 'category_genres'
+        db_table = 'movie_genres'
 
 class Provider(models.Model):
     name = models.CharField(max_length = 45)
