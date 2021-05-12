@@ -11,11 +11,10 @@ class Movie(models.Model):
     thumbnail_img  = models.URLField()
     background_img = models.URLField()
     category       = models.ForeignKey('Category', on_delete = models.CASCADE)
-    genre_id       = models.ManyToManyField('Genre', through = 'Movie_Genre')
-    provider_id    = models.ManyToManyField('Provider', through = 'Movie_Provider')
-    director_id    = models.ManyToManyField('Director', through = 'Movie_Director')
-    actor_id       = models.ManyToManyField('Actor', through = 'Movie_Actor')
-    comment_id     = models.ManyToManyField('users.User', through = "Comment", related_name='user')
+    genre          = models.ManyToManyField('Genre', through = 'MovieGenre')
+    provider       = models.ManyToManyField('Provider', through = 'MovieProvider')
+    director       = models.ManyToManyField('Director', through = 'MovieDirector')
+    actor          = models.ManyToManyField('Actor', through = 'MovieActor')
 
     class Meta:
         db_table = 'movies'
@@ -41,11 +40,11 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
-class Movie_Genre(models.Model):
-    genre_id = models.ForeignKey('Genre', on_delete = models.CASCADE)
-    movie_id = models.ForeignKey('Movie', on_delete = models.CASCADE)
+class MovieGenre(models.Model):
+    genre = models.ForeignKey('Genre', on_delete = models.CASCADE)
+    movie = models.ForeignKey('Movie', on_delete = models.CASCADE)
     class Meta:
-        db_table = 'categories_genres'
+        db_table = 'category_genres'
 
 class Provider(models.Model):
     name = models.CharField(max_length = 45)
@@ -56,16 +55,16 @@ class Provider(models.Model):
     def __str__(self):
         return self.name
 
-class Movie_Provider(models.Model):
+class MovieProvider(models.Model):
     movie_id    = models.ForeignKey('Movie', on_delete = models.CASCADE)
     provider_id = models.ForeignKey('Provider', on_delete = models.CASCADE)
 
     class Meta:
-        db_table = 'movies_providers'
+        db_table = 'movie_providers'
 
 class Director(models.Model):
     first_name    = models.CharField(max_length = 45)
-    last_name     = models.CharField(max_length = 45, blank = True)
+    last_name     = models.CharField(max_length = 45, null = True)
     gender        = models.CharField(max_length = 30)
     date_of_birth = models.DateField(null = True)
 
@@ -75,16 +74,16 @@ class Director(models.Model):
     def __str__(self):
         return self.first_name
 
-class Movie_Director(models.Model):
+class MovieDirector(models.Model):
     movie    = models.ForeignKey('Movie', on_delete = models.CASCADE)
     director = models.ForeignKey('Director', on_delete = models.CASCADE)
 
     class Meta:
-        db_table = 'movies_directors'
+        db_table = 'movie_directors'
 
 class Actor(models.Model):
     first_name    = models.CharField(max_length = 45)
-    last_name     = models.CharField(max_length = 45, blank = True)
+    last_name     = models.CharField(max_length = 45, null = True)
     gender        = models.CharField(max_length = 30)
     date_of_birth = models.DateField(null = True)
 
@@ -94,12 +93,12 @@ class Actor(models.Model):
     def __str__(self):
         return self.first_name
 
-class Movie_Actor(models.Model):
-    movie_id = models.ForeignKey('Movie', on_delete = models.CASCADE)
-    actor_id = models.ForeignKey('Actor', on_delete = models.CASCADE)
+class MovieActor(models.Model):
+    movie = models.ForeignKey('Movie', on_delete = models.CASCADE)
+    actor = models.ForeignKey('Actor', on_delete = models.CASCADE)
 
     class Meta:
-        db_table = 'movies_actors'
+        db_table = 'movie_actors'
 
 class Comment(models.Model):
     movie   = models.ForeignKey('Movie', on_delete = models.CASCADE)

@@ -6,8 +6,8 @@ class User(models.Model):
     password  = models.CharField(max_length = 250)
     create_at = models.DateTimeField(auto_now_add = True)
     update_at = models.DateTimeField(auto_now = True)
-    wish      = models.ManyToManyField('movies.Movie', through = "Wish_Movie", related_name = "wish")
-    rating    = models.ManyToManyField('movies.Movie', through = "Rating_Movie", related_name = 'rating' )
+    wish      = models.ManyToManyField('movies.Movie', through = "WishMovie", related_name = "wish")
+    rating    = models.ManyToManyField('movies.Movie', through = "RatingMovie", related_name = 'rating' )
 
     class Meta:
         db_table = "users"
@@ -15,18 +15,18 @@ class User(models.Model):
     def __str__(self):
         return self.email
 
-class Rating_Movie(models.Model):
+class RatingMovie(models.Model):
     user  = models.ForeignKey('User', on_delete = models.CASCADE)
     movie = models.ForeignKey('movies.Movie', on_delete = models.CASCADE)
 
     class Meta:
-        db_table = 'ratings'
+        db_table = 'raing_movies'
 
-class Wish_Movie(models.Model):
+class WishMovie(models.Model):
     user   = models.ForeignKey('User', on_delete = models.CASCADE)
     movie  = models.ForeignKey('movies.Movie', on_delete = models.CASCADE)
     rating = models.DecimalField(max_digits = 2, decimal_places = 1, null=True)
     wish   = models.BooleanField(default = False)
 
     class Meta:
-        db_table = "wishes"
+        db_table = "wish_movies"
