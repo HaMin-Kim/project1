@@ -10,9 +10,10 @@ class Movie(models.Model):
     audience_count = models.IntegerField()
     thumbnail_img  = models.URLField()
     background_img = models.URLField()
+    netflix        = models.BooleanField(default = False)
+    watcha         = models.BooleanField(default = False)
     category       = models.ForeignKey('Category', on_delete = models.CASCADE)
     genre          = models.ManyToManyField('Genre', through = 'MovieGenre')
-    provider       = models.ManyToManyField('Provider', through = 'MovieProvider')
     director       = models.ManyToManyField('Director', through = 'MovieDirector')
     actor          = models.ManyToManyField('Actor', through = 'MovieActor')
 
@@ -46,21 +47,6 @@ class MovieGenre(models.Model):
     class Meta:
         db_table = 'movie_genres'
 
-class Provider(models.Model):
-    name = models.CharField(max_length = 45)
-
-    class Meta:
-        db_table = 'providers'
-
-    def __str__(self):
-        return self.name
-
-class MovieProvider(models.Model):
-    movie_id    = models.ForeignKey('Movie', on_delete = models.CASCADE)
-    provider_id = models.ForeignKey('Provider', on_delete = models.CASCADE)
-
-    class Meta:
-        db_table = 'movie_providers'
 
 class Director(models.Model):
     first_name    = models.CharField(max_length = 45)
