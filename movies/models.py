@@ -48,8 +48,7 @@ class Movie_Genre(models.Model):
         db_table = 'categories_genres'
 
 class Provider(models.Model):
-    netflix = models.BooleanField(default = False)
-    watcha  = models.BooleanField(default = False)
+    name = models.CharField(max_length = 45)
 
     class Meta:
         db_table = 'providers'
