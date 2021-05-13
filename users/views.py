@@ -3,11 +3,11 @@ import bcrypt
 import jwt
 import re
 
-from django.http import JsonResponse
+from django.http  import JsonResponse
 from django.views import View
 
 from users.models import User
-from my_settings import SECRET
+from my_settings  import SECRET
 
 class SignUp(View):
     def post(self, request):
@@ -18,6 +18,7 @@ class SignUp(View):
             password            = data["password"]
             email_validation    = re.compile('^[a-z0-9]+@[a-z0-9]+\.[a-z0-9.]+$', re.I)
             password_validation = re.compile(r'^(?=.*[a-z])(?=.*[0-9])(?=.*[~!@#$%^&*]).{10,}', re.I)
+
             if not email_validation.match(email):
                 return JsonResponse({"MESSAGE" : "INVALID_EMAIL"}, status=400)
 
@@ -37,7 +38,7 @@ class SignUp(View):
                 password = decode_password
             )
 
-            return JsonResponse({"MESSAGE" : "SUCCESS"}, status=200)
+            return JsonResponse({"MESSAGE" : "SUCCESS"}, status=201)
 
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status=400)
