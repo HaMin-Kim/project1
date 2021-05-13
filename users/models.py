@@ -16,8 +16,8 @@ class User(models.Model):
         return self.email
 
 class RatingMovie(models.Model):
-    user  = models.ForeignKey('User', on_delete = models.CASCADE)
-    movie = models.ForeignKey('movies.Movie', on_delete = models.CASCADE)
+    user   = models.ForeignKey('User', on_delete = models.CASCADE)
+    movie  = models.ForeignKey('movies.Movie', on_delete = models.CASCADE)
     rating = models.DecimalField(max_digits=2, decimal_places=1, null=True)
 
     class Meta:
