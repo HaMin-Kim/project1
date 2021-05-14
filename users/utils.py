@@ -13,9 +13,14 @@ def login_confirm(original_function):
 
             if token:
                 token_payload = jwt.decode(token, SECRET, algorithms='HS256')
+
+                if not User.objects.filter(id=token_payload['user_id']).exists():
+                    return JsonResponse({'INVALID_TOKEN'})
+
                 user          = User.objects.get(id=token_payload['user_id'])
                 request.user  = user
                 return original_function(self, request)
+
             return JsonResponse({'MESSAGE': 'NEED_LOGIN'}, status=401)
 
         except jwt.ExpiredSignatureError:
