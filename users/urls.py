@@ -4,5 +4,6 @@ from users.views import SignUp, SignIn
 
 urlpatterns = [
     path("/signup", SignUp.as_view()),
-    path("/signin", SignIn.as_view())
+    path("/signin", SignIn.as_view()),
+    # path("/mypage", MyPage.as_view())
 ]
