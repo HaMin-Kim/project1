@@ -2,12 +2,16 @@ import json
 import bcrypt
 import jwt
 import re
+import random
 
-from django.http  import JsonResponse
-from django.views import View
+from django.http      import JsonResponse
+from django.views     import View
+from django.db.models import Max
 
-from users.models import User
-from my_settings  import SECRET
+from users.models  import User, RatingMovie
+from movies.models import Movie, Genre
+from my_settings   import SECRET
+from users.utils   import login_confirm
 
 class SignUp(View):
     def post(self, request):
@@ -64,3 +68,45 @@ class SignIn(View):
 
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status=400)
+
+class Review(View):
+    @login_confirm
+    def get(self, request):
+        result        = []
+        genre_list    = [(i.id ,i.name) for i in Genre.objects.all()]
+        max_id        = Movie.objects.all().aggregate(max_id = Max("id"))['max_id']
+        random_list   = random.sample(range(1, max_id+1), max_id)
+        user          = request.user
+        rating        = 0
+        genre         = None
+        rating_movies = len(RatingMovie.objects.filter(user=user))
+
+        for movies in random_list:
+
+            if Movie.objects.filter(id = movies).exists():
+
+                if not RatingMovie.objects.filter(movie=movies, user=user).exists():
+                    movie = Movie.objects.get(id=movies)
+
+                    if movie.genre.filter(movie=movie).exists():
+                        genre = movie.genre.get(movie=movie).name
+
+                    result.append(
+                        {
+                            "movie_id"     : movie.id,
+                            "title"        : movie.korean_title,
+                            "country"      : movie.country,
+                            "release_date" : movie.release_date,
+                            "rating"       : rating,
+                            "genre"        : genre,
+                            "thumbnail"    : movie.thumbnail_img
+                        }
+                    )
+
+        return JsonResponse(
+            {
+                "result"        : result,
+                "genre"         : genre_list,
+                "rating_movies" : rating_movies
+            },status=200
+        )
