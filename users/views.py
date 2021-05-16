@@ -64,3 +64,21 @@ class SignIn(View):
 
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status=400)
+
+class MyPage(View):
+    @login_confirm
+    def get(self, request):
+        result       = []
+        user         = request.user
+        rating_count = len(RatingMovie.objects.filter(user = user))
+        wish         = len(WishMovie.objects.filter(user = user))
+
+        result.append(
+            {
+            "name"         : user.name,
+            "rating_count" : rating_count,
+            "wish_count"   : wish
+                       }
+            )
+
+        return JsonResponse({"result" : result}, status = 200)
