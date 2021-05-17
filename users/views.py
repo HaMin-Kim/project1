@@ -72,6 +72,6 @@ class MyPage(View):
         user         = request.user
         rating_count = len(RatingMovie.objects.filter(user = user))
         wish         = len(WishMovie.objects.filter(user = user))
-        result       = [{"name" : user.name, "rating_count" : rating_count, "wish_count" : wish}]
+        result       = list([{"name" : user.name, "rating_count" : rating_count, "wish_count" : wish}])
 
         return JsonResponse({"result" : result}, status = 200)
