@@ -8,7 +8,7 @@ from users.utils      import login_confirm
 from movies.models    import Movie, Comment, Like, Genre, MovieGenre
 
 class MovieInformationView(View):
-	def get(self, request, movie_id):
+	def get(self, request, movie_id, genre_id):
 		if Movie.objects.filter(id=movie_id).exists():
 			movie    = Movie.objects.get(id = movie_id)
 
@@ -25,7 +25,8 @@ class MovieInformationView(View):
 			
 #			LIMIT = 10
 			similar_movies = []
-#			for similar_movie in movie.genre:
+			genre = 
+#			for similar_movie in Genre.objects.get(id = movie_id:
 #				similar_movies.append(
 #					{
 #						'id'           : similar_movie.id,
@@ -45,10 +46,14 @@ class MovieInformationView(View):
                                 'running_time'  : movie.running_time,
                                 'discription'   : movie.discription,
                                 'thumbnail_img' : movie.thumbnail_img,
-                                'background_img': movie.background_img,
-                                'genre'         : 
+                                'background_img': movie.background_img, 
 				'comments'      : movie_comments,
 				'similar_movies': similar_movies,
 				}
 
 		return JsonResponse({'movie_information': movie_information}, status = 200)	
+
+class SimilarMovie(View):
+	def get(self, request, movie_id, genre_id):
+		genre = Genre.objects.get(id = movie_id)
+		for similar_movie in movie_set
