@@ -82,7 +82,7 @@ class Review(View):
                 if user_movie.rating == rating:
                     user_movie.delete()
 
-                    return JsonResponse({"MESSAGE" : "DELETE_SUCCESS"}, status=201)
+                    return JsonResponse({"MESSAGE" : "DELETE_SUCCESS"}, status=204)
 
                 user_movie.rating = rating
                 user_movie.save()
