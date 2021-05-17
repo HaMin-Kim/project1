@@ -72,40 +72,27 @@ class SignIn(View):
 class Review(View):
     @login_confirm
     def get(self, request):
-        result        = []
-        movie_random  = []
-        genre_list    = [(i.id ,i.name) for i in Genre.objects.all()]
         max_id        = Movie.objects.last().id
         random_list   = random.sample(range(1, max_id+1), max_id)
         user          = request.user
         rating        = 0
         rating_movies = len(RatingMovie.objects.filter(user=user))
+        movie_list    = Movie.objects.all()
 
-        for movies in random_list:
-
-            if Movie.objects.filter(id = movies).exists():
-
-                if not RatingMovie.objects.filter(movie=movies, user=user).exists():
-                    movie = Movie.objects.get(id=movies)
-
-                    movie_random.append(
-                        {
-                            "movie_id"     : movie.id,
-                            "title"        : movie.korean_title,
-                            "country"      : movie.country,
-                            "release_date" : movie.release_date,
-                            "rating"       : rating,
-                            "genre"        : movie.genre.name,
-                            "thumbnail"    : movie.thumbnail_img
-                        }
-                    )
-
-        result.append(
+        movie_random = [
                 {
-                    "movie_random"  : movie_random,
-                    "genre_list"    : genre_list,
-                    "rating_movies" : rating_movies
+                    "movie_id"     : movie.id,
+                    "title"        : movie.korean_title,
+                    "country"      : movie.country,
+                    "release_date" : movie.release_date,
+                    "rating"       : rating,
+                    "genre"        : movie.genre.name,
+                    "thumbnail"    : movie.thumbnail_img
                     }
-                )
+                for movie_id in random_list for movie in movie_list\
+                if movie.id == movie_id if not RatingMovie.objects.filter(movie = movie.id, user=user).exists()
+                        ]
 
-        return JsonResponse({"result" : result},status=200)
+        movie_random.append({"rating_movies": rating_movies})
+
+        return JsonResponse({"movie_random" : movie_random},status=200)
