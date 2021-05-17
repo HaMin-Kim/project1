@@ -1,41 +1,32 @@
-import json, random
+import json
 
 from django.views     import View
 from django.http      import JsonResponse
-from django.db.models import Max
 
 from users.utils      import login_confirm
 from movies.models    import Movie, Comment, Like, Genre, MovieGenre
 
-class MovieInformationView(View):
-	def get(self, request, movie_id, genre_id):
-		if Movie.objects.filter(id=movie_id).exists():
+class MovieDetailView(View):
+	def get(self, request, movie_id):
+		if Movie.objects.filter(id = movie_id).exists():
 			movie    = Movie.objects.get(id = movie_id)
 
-			movie_comments = []
-		#	for comment in Comment.objects.filter(movie = movie):
-		#		movie_comments.append(
-		#			{
-		#				'id'     : comment.id,
-		#				'user'   : comment.user,
-		#				'comment': comment.comment,
-		#			#	'likes'  : comment.like_set.
-		#			}
-		#		)
+			movie_comments = [
+				{
+					'id'     : comment.id,
+					'user_id': comment.user.id,
+					'user_name': comment.user.name,
+					'comment': comment.comment,
+					'likes'  : comment.like_set.count()
+				}
+				for comment in Comment.objects.filter(movie=movie)
+			]
 			
-#			LIMIT = 10
-			similar_movies = []
-			genre = 
-#			for similar_movie in Genre.objects.get(id = movie_id:
-#				similar_movies.append(
-#					{
-#						'id'           : similar_movie.id,
-#						'korean_title' : similar_movie.korean_title,
-#						'thumbnail_img': similar_movie.thumbnail_img,
-#						'netflix'      : similar_movie.netflix,
-#						'watcha'       : similar_movie.watcha,
-#					}
-#				)
+			LIMIT = 3
+			similar_movies = [
+						list(similar_movie.movie_set.values('id','korean_title', 'thumbnail_img', 'netflix', 'watcha'))[:LIMIT]
+					for similar_movie in movie.genre.all()
+			]
 	
 			movie_information = {
                                 'id'            : movie.id,
@@ -47,13 +38,9 @@ class MovieInformationView(View):
                                 'discription'   : movie.discription,
                                 'thumbnail_img' : movie.thumbnail_img,
                                 'background_img': movie.background_img, 
+				'genre'         : list(movie.genre.values('name')),
 				'comments'      : movie_comments,
 				'similar_movies': similar_movies,
 				}
 
 		return JsonResponse({'movie_information': movie_information}, status = 200)	
-
-class SimilarMovie(View):
-	def get(self, request, movie_id, genre_id):
-		genre = Genre.objects.get(id = movie_id)
-		for similar_movie in movie_set
