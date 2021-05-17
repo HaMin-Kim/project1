@@ -6,8 +6,9 @@ import re
 from django.http  import JsonResponse
 from django.views import View
 
-from users.models import User
+from users.models import User,RatingMovie
 from my_settings  import SECRET
+from users.utils  import login_confirm
 
 class SignUp(View):
     def post(self, request):
@@ -68,17 +69,9 @@ class SignIn(View):
 class MyPage(View):
     @login_confirm
     def get(self, request):
-        result       = []
         user         = request.user
         rating_count = len(RatingMovie.objects.filter(user = user))
         wish         = len(WishMovie.objects.filter(user = user))
-
-        result.append(
-            {
-            "name"         : user.name,
-            "rating_count" : rating_count,
-            "wish_count"   : wish
-                       }
-            )
+        result       = [{"name" : user.name, "rating_count" : rating_count, "wish_count" : wish}]
 
         return JsonResponse({"result" : result}, status = 200)
