@@ -73,12 +73,12 @@ class Review(View):
     @login_confirm
     def get(self, request):
         result        = []
+        movie_random  = []
         genre_list    = [(i.id ,i.name) for i in Genre.objects.all()]
-        max_id        = Movie.objects.all().aggregate(max_id = Max("id"))['max_id']
+        max_id        = Movie.objects.last().id
         random_list   = random.sample(range(1, max_id+1), max_id)
         user          = request.user
         rating        = 0
-        genre         = None
         rating_movies = len(RatingMovie.objects.filter(user=user))
 
         for movies in random_list:
@@ -88,25 +88,24 @@ class Review(View):
                 if not RatingMovie.objects.filter(movie=movies, user=user).exists():
                     movie = Movie.objects.get(id=movies)
 
-                    if movie.genre.filter(movie=movie).exists():
-                        genre = movie.genre.get(movie=movie).name
-
-                    result.append(
+                    movie_random.append(
                         {
                             "movie_id"     : movie.id,
                             "title"        : movie.korean_title,
                             "country"      : movie.country,
                             "release_date" : movie.release_date,
                             "rating"       : rating,
-                            "genre"        : genre,
+                            "genre"        : movie.genre.name,
                             "thumbnail"    : movie.thumbnail_img
                         }
                     )
 
-        return JsonResponse(
-            {
-                "result"        : result,
-                "genre"         : genre_list,
-                "rating_movies" : rating_movies
-            },status=200
-        )
+        result.append(
+                {
+                    "movie_random"  : movie_random,
+                    "genre_list"    : genre_list,
+                    "rating_movies" : rating_movies
+                    }
+                )
+
+        return JsonResponse({"result" : result},status=200)
