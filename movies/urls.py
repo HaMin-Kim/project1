@@ -1,8 +1,7 @@
 from django.urls  import path
 
-from movies.views import MovieRankingView, MovieRandomView
+from movies.views import MovieInfoView
 
 urlpatterns= [
-	path('/ranking', MovieRankingView.as_view()), 
-	path('/random', MovieRandomView.as_view()),
+	path('/movies', MovieInfoView.as_view()), 
 ]
