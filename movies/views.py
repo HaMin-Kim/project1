@@ -88,3 +88,23 @@ class MovieCommentView(View):
 		return JsonResponse({'results': results}, status=200)
 
 
+class CommentLikeView(View):
+	@login_confirm
+	def post(self, request):
+		data = json.loads(request.body)
+		
+		try:
+			comment_check = Comment.objects.filter(id = 'comment_id')
+			like_check    = Like.objects.filter(
+								user = request.user, 
+								comment = data['comment_id']
+					)
+			
+
+		except KeyError:
+			return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+
+
+
+
