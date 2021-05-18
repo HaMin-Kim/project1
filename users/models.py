@@ -18,7 +18,7 @@ class User(models.Model):
 class RatingMovie(models.Model):
     user   = models.ForeignKey('User', on_delete = models.CASCADE)
     movie  = models.ForeignKey('movies.Movie', on_delete = models.CASCADE)
-    rating = models.DecimalField(max_digits=2, decimal_places=1, null=True)
+    rating = models.DecimalField(max_digits=2, decimal_places=1)
 
     class Meta:
         db_table = 'rating_movies'

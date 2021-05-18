@@ -2,14 +2,16 @@ import json
 import bcrypt
 import jwt
 import re
+import random
 
-from django.http  import JsonResponse
-from django.views import View
+from django.http      import JsonResponse
+from django.views     import View
+from django.db.models import Max
 
-from users.models import User, RatingMovie
-from my_settings  import SECRET
-from users.utils  import login_confirm
-from movies.models import Movie
+from users.models  import User, RatingMovie
+from movies.models import Movie, Genre
+from my_settings   import SECRET
+from users.utils   import login_confirm
 
 class SignUp(View):
     def post(self, request):
@@ -69,6 +71,32 @@ class SignIn(View):
 
 class Review(View):
     @login_confirm
+    def get(self, request):
+        max_id        = Movie.objects.last().id
+        random_list   = random.sample(range(1, max_id+1), max_id)
+        user          = request.user
+        rating        = 0
+        rating_movies = len(RatingMovie.objects.filter(user=user))
+        movie_list    = Movie.objects.all()
+
+        movie_random = [
+                {
+                    "movie_id"     : movie.id,
+                    "title"        : movie.korean_title,
+                    "country"      : movie.country,
+                    "release_date" : movie.release_date,
+                    "rating"       : rating,
+                    "genre"        : movie.genre.name,
+                    "thumbnail"    : movie.thumbnail_img
+                    }
+                for movie_id in random_list for movie in movie_list\
+                if movie.id == movie_id if not RatingMovie.objects.filter(movie = movie.id, user=user).exists()
+                        ]
+
+        movie_random.append({"rating_movies": rating_movies})
+
+        return JsonResponse({"movie_random" : movie_random},status=200)
+
     def post(self, request):
         try:
             data   = json.loads(request.body)
