@@ -7,9 +7,12 @@ import numpy
 
 from django.http      import JsonResponse
 from django.views     import View
+<<<<<<< HEAD
 from django.db.models import Avg
+=======
+>>>>>>> main
 
-from users.models  import User, RatingMovie
+from users.models  import User, RatingMovie, WishMovie
 from movies.models import Movie, Genre
 from my_settings   import SECRET
 from users.utils   import login_confirm
@@ -69,6 +72,16 @@ class SignIn(View):
 
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status=400)
+
+class MyPage(View):
+    @login_confirm
+    def get(self, request):
+        user         = request.user
+        rating_count = len(RatingMovie.objects.filter(user = user))
+        wish         = len(WishMovie.objects.filter(user = user))
+        result       = {"name" : user.name, "rating_count" : rating_count, "wish_count" : wish}
+
+        return JsonResponse({"result" : result}, status = 200)
 
 class Review(View):
     @login_confirm
