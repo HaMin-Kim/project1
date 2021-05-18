@@ -21,7 +21,7 @@ class RatingMovie(models.Model):
     rating = models.DecimalField(max_digits=2, decimal_places=1, null=True)
 
     class Meta:
-        db_table = 'raing_movies'
+        db_table = 'rating_movies'
 
 class WishMovie(models.Model):
     user   = models.ForeignKey('User', on_delete = models.CASCADE)

@@ -6,8 +6,10 @@ import re
 from django.http  import JsonResponse
 from django.views import View
 
-from users.models import User
+from users.models import User, RatingMovie
 from my_settings  import SECRET
+from users.utils  import login_confirm
+from movies.models import Movie
 
 class SignUp(View):
     def post(self, request):
@@ -64,3 +66,32 @@ class SignIn(View):
 
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status=400)
+
+class Review(View):
+    @login_confirm
+    def post(self, request):
+        try:
+            data   = json.loads(request.body)
+            rating = float(data["rating"])
+            movie  = Movie.objects.get(id = data["movie"])
+            user   = request.user
+
+            if RatingMovie.objects.filter(movie = movie, user = user).exists():
+                user_movie = RatingMovie.objects.get(movie = movie, user = user)
+
+                if user_movie.rating == rating:
+                    user_movie.delete()
+
+                    return JsonResponse({"MESSAGE" : "DELETE_SUCCESS"}, status=204)
+
+                user_movie.rating = rating
+                user_movie.save()
+
+                return JsonResponse({"MESSAGE" : "UPDATE_SUCCESS"}, status=201)
+
+            RatingMovie.objects.create(movie = movie, user = user, rating=rating)
+            return JsonResponse({"MESSAGE" : "CREATE_SUCCESS"}, status=201)
+
+
+        except KeyError:
+            return JsonResponse({"MESSAGE" : "KEY_ERROR"})
