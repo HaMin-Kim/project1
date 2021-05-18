@@ -66,4 +66,25 @@ class MovieCommentView(View):
 		comment_check.delete()
 		
 		return JsonResponse({"message": "SUCCESS"}, status=204)
+		
+	@login_confirm
+	def get(self, request, movie_id, comment_id):
+		results = []
+		comment_check = Comment.objects.filter(user = request.user)
+		
+		# 댓글이 없는 경우
+		if not comment_check.exists():
+			return JsonResponse({"message": "NO_COMMENT"}, status=400)
+		
+		# 댓글이 있을 경우
+		comment = comment_check.first()
+		
+		my_comment_data = {
+					'my_id'     : comment.user.id,
+					'my_name'   : comment.user.name,
+					'my_comment': comment.comment,
+				}
+		results.append(my_comment_data)
+		return JsonResponse({'results': results}, status=200)
+
 
