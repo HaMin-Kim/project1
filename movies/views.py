@@ -26,7 +26,7 @@ class MovieCommentView(View):
 				user    = request.user,
 				comment = data["comment"]
 			)
-			return JsonResponse({'MESSAGE': 'SUCCESS'}, status =200)
+			return JsonResponse({'MESSAGE': 'SUCCESS'}, status =201)
 
 		except KeyError:
 			return JsonResponse({"message": "KEY_ERROR"}, status=400)
@@ -49,7 +49,7 @@ class MovieCommentView(View):
 			comment.save()
 
 			update_comment = {"comment": comment.comment}
-			return JsonResponse(update_comment, status=200)
+			return JsonResponse(update_comment, status=201)
 
 		except KeyError:
                         return JsonResponse({"message": "KEY_ERROR"}, status=400)
@@ -69,7 +69,6 @@ class MovieCommentView(View):
 		
 	@login_confirm
 	def get(self, request, movie_id, comment_id):
-		results = []
 		comment_check = Comment.objects.filter(user = request.user)
 		
 		# 댓글이 없는 경우
@@ -84,25 +83,9 @@ class MovieCommentView(View):
 					'my_name'   : comment.user.name,
 					'my_comment': comment.comment,
 				}
-		results.append(my_comment_data)
-		return JsonResponse({'results': results}, status=200)
+		return JsonResponse({'my_comment_data': my_comment_data}, status=200)
 
 
-class CommentLikeView(View):
-	@login_confirm
-	def post(self, request):
-		data = json.loads(request.body)
-		
-		try:
-			comment_check = Comment.objects.filter(id = 'comment_id')
-			like_check    = Like.objects.filter(
-								user = request.user, 
-								comment = data['comment_id']
-					)
-			
-
-		except KeyError:
-			return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
 
 
