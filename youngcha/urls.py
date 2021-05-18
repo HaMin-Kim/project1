@@ -1,4 +1,4 @@
-from django.urls import path,include
+from django.urls import path, include
 
 urlpatterns = [
 	path("movies", include("movies.urls")),
