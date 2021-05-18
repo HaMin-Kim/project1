@@ -6,7 +6,7 @@ import random
 
 from django.http      import JsonResponse
 from django.views     import View
-from django.db.models import Max
+from django.db.models import Avg
 
 from users.models  import User, RatingMovie
 from movies.models import Movie, Genre
@@ -123,3 +123,30 @@ class Review(View):
 
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"})
+
+class FavoriteGenre(View):
+    @login_confirm
+    def get(self, request):
+        user = request.user
+        genre_list = Genre.objects.all()
+        rating = RatingMovie.objects.filter
+
+        genre_average = {
+            genre.name : (
+                float(rating(user=user,movie__genre__name = genre.name).aggregate(Avg("rating"))["rating__avg"]),
+                len(rating(user=user, movie__genre__name = genre.name)))\
+                    for genre in genre_list if rating(user=user, movie__genre__name = genre.name).exists()
+                    }
+                    
+        genre_average = sorted(genre_average.items(), key=lambda x: x[0])
+        
+        favorite_genre = [
+            {
+                "id"      : Genre.objects.get(name = genre[0]).id,
+                "genre"   : genre[0],
+                "average" : genre[1][0]*20,
+                "count"   : genre[1][1]
+                }
+                for genre in genre_average
+                ]
+        return JsonResponse({"favorite_genre" : favorite_genre}, status = 200)
