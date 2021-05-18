@@ -22,6 +22,7 @@ class MovieInfoView(View):
 				for comment in Comment.objects.filter(movie=movie)
 			]
 			
+			
 			LIMIT = 3
 			similar_movies = [list(similar_movie.movie_set.values(
 			'id','korean_title', 'thumbnail_img', 'netflix', 'watcha'
