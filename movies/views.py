@@ -4,7 +4,7 @@ from django.views     import View
 from django.http      import JsonResponse
 
 from users.utils      import login_confirm
-from movies.models    import Movie, Comment
+from movies.models    import Movie, Comment, Like
 from users.models     import User
 
 class MovieCommentView(View):
@@ -86,6 +86,37 @@ class MovieCommentView(View):
 		return JsonResponse({'my_comment_data': my_comment_data}, status=200)
 
 
+class CommentLikeView(View):
+	@login_confirm
+	def post(self, request):
+		data = json.loads(request.body)
+	
+		try:
+			# 확인
+			comment_check = Comment.objects.filter(id = data['comment_id'])
+			like_check    = Like.objects.filter(
+			user = request.user, comment = data['comment_id']
+			)
+		
+			# 댓글이 없으면
+			if not comment_check.exists():
+				return JsonResponse({"message": "NO COMMENT"}, status=404)
+		
+			# 이미 좋아요를 한 경우 좋아요 삭제 처리
+			if like_check.exists():
+				like_check.delete()
+				return JsonResponse({"message": "DELETE_SUCCESS"}, status=204)
+		
+			# 댓글이 있고 좋아요가 없으면
+			Like.objects.create(
+				user_id    = request.user.id,
+				comment_id = data['comment_id']
+                	)
+
+			return JsonResponse({"message": "SUCCESS"}, status=201)
+			
+		except KeyError:
+			return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
 
 
