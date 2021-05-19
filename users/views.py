@@ -80,6 +80,25 @@ class MyPage(View):
 
         return JsonResponse({"result" : result}, status = 200)
 
+class StarDistribution(View):
+    @login_confirm
+    def get(self, request):
+        user              = request.user
+        user_movies       = RatingMovie.objects.filter(user=user)
+        rating_count      = len(user_movies)
+        rating_highest    = float(user_movies.order_by("-rating")[0].rating)
+        rating_average    = float(user_movies.aggregate(Avg("rating"))['rating__avg'])
+        star_distribution = [{rating : len(RatingMovie.objects.filter(user=user, rating=rating))} for rating in numpy.arange(0.5, 5.5, 0.5)]
+
+        result = {
+                "rating_count"      : rating_count,
+                "rating_highest"    : rating_highest,
+                "rating_average"    : rating_average,
+                "star_distribution" : star_distribution
+                }
+
+        return JsonResponse({"result" : result}, status=200)
+
 class Review(View):
     @login_confirm
     def get(self, request):
@@ -89,24 +108,41 @@ class Review(View):
         rating        = 0
         rating_movies = len(RatingMovie.objects.filter(user=user))
         movie_list    = Movie.objects.all()
-
-        movie_random = [
+        genre_id      = request.GET.get("genre_id", None)
+        
+        if genre_id:
+            genre       = Genre.objects.get(id = genre_id)
+            genre_movie = [
                 {
                     "movie_id"     : movie.id,
                     "title"        : movie.korean_title,
                     "country"      : movie.country,
                     "release_date" : movie.release_date,
                     "rating"       : rating,
-                    "genre"        : movie.genre.name,
                     "thumbnail"    : movie.thumbnail_img
                     }
-                for movie_id in random_list for movie in movie_list\
-                if movie.id == movie_id if not RatingMovie.objects.filter(movie = movie.id, user=user).exists()
+                    for movie in Movie.objects.filter(genre = genre)\
+                        if not RatingMovie.objects.filter(movie = movie, user = user).exists()
                         ]
-
+                        
+            return JsonResponse({"genre_movie" : genre_movie}, status=200)
+            
+        movie_random = [
+            {
+                "movie_id"     : movie.id,
+                "title"        : movie.korean_title,
+                "country"      : movie.country,
+                "release_date" : movie.release_date,
+                "rating"       : rating,
+                "thumbnail"    : movie.thumbnail_img
+                } 
+                for movie_id in random_list for movie in movie_list\
+                    if movie.id == movie_id if not RatingMovie.objects.filter(movie = movie.id, user = user).exists()
+                    ]
+        
         movie_random.append({"rating_movies": rating_movies})
 
-        return JsonResponse({"movie_random" : movie_random},status=200)
+        return JsonResponse({"movie_random" : movie_random}, status=200)
 
     @login_confirm
     def post(self, request):
@@ -135,22 +171,3 @@ class Review(View):
 
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"})
-
-class StarDistribution(View):
-    @login_confirm
-    def get(self, request):
-        user              = request.user
-        user_movies       = RatingMovie.objects.filter(user=user)
-        rating_count      = len(user_movies)
-        rating_highest    = float(user_movies.order_by("-rating")[0].rating)
-        rating_average    = float(user_movies.aggregate(Avg("rating"))['rating__avg'])
-        star_distribution = [{rating : len(RatingMovie.objects.filter(user=user, rating=rating))} for rating in numpy.arange(0.5, 5.5, 0.5)]
-
-        result = {
-                "rating_count"      : rating_count,
-                "rating_highest"    : rating_highest,
-                "rating_average"    : rating_average,
-                "star_distribution" : star_distribution
-                }
-
-        return JsonResponse({"result" : result}, status=200)
