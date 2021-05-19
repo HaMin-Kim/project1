@@ -1,6 +1,6 @@
 from django.urls import path
 
-from users.views import SignUp, SignIn, Review, StarDistribution, MyPage, FavoriteGenre
+from users.views import SignUp, SignIn, Review, StarDistribution, MyPage, FavoriteGenre, GenreList
 
 urlpatterns = [
     path("/signup", SignUp.as_view()),
@@ -9,4 +9,5 @@ urlpatterns = [
     path("/favorite", FavoriteGenre.as_view()),
     path("/mypage", MyPage.as_view()),
     path("/analysis", StarDistribution.as_view()),
-]
+    path("/genre", GenreList.as_view())
+    ]

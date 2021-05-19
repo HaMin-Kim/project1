@@ -89,24 +89,40 @@ class Review(View):
         rating        = 0
         rating_movies = len(RatingMovie.objects.filter(user=user))
         movie_list    = Movie.objects.all()
-
-        movie_random = [
+        genre_id      = request.GET.get("genre_id", None)
+        
+        if genre_id:
+            genre = Genre.objects.get(id = genre_id)
+            genre_movie = [
                 {
                     "movie_id"     : movie.id,
                     "title"        : movie.korean_title,
                     "country"      : movie.country,
                     "release_date" : movie.release_date,
                     "rating"       : rating,
-                    "genre"        : movie.genre.name,
                     "thumbnail"    : movie.thumbnail_img
                     }
-                for movie_id in random_list for movie in movie_list\
-                if movie.id == movie_id if not RatingMovie.objects.filter(movie = movie.id, user=user).exists()
+                    for movie in Movie.objects.filter(genre = genre)\
+                        if not RatingMovie.objects.filter(movie = movie, user = user).exists()
                         ]
-
+            return JsonResponse({"genre_movie" : genre_movie}, status=200)
+            
+        movie_random = [
+            {
+                "movie_id"     : movie.id,
+                "title"        : movie.korean_title,
+                "country"      : movie.country,
+                "release_date" : movie.release_date,
+                "rating"       : rating,
+                "thumbnail"    : movie.thumbnail_img
+                } 
+                for movie_id in random_list for movie in movie_list\
+                    if movie.id == movie_id if not RatingMovie.objects.filter(movie = movie.id, user = user).exists()
+                    ]
+        
         movie_random.append({"rating_movies": rating_movies})
 
-        return JsonResponse({"movie_random" : movie_random},status=200)
+        return JsonResponse({"movie_random" : movie_random}, status=200)
 
     @login_confirm
     def post(self, request):
@@ -163,6 +179,12 @@ class FavoriteGenre(View):
                 ]
 
         return JsonResponse({"favorite_genre" : favorite_genre}, status = 200)
+
+class GenreList(View):
+    def get(self, reuqest):
+        genre_list = {genre.id : genre.name for genre in Genre.objects.all()}
+
+        return JsonResponse({"genre_list" : genre_list}, status=200)
 
 class StarDistribution(View):
     @login_confirm
