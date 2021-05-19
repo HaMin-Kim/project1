@@ -3,9 +3,11 @@ import bcrypt
 import jwt
 import re
 import random
+import numpy
 
 from django.http      import JsonResponse
 from django.views     import View
+from django.db.models import Avg
 
 from users.models  import User, RatingMovie, WishMovie
 from movies.models import Movie, Genre
@@ -106,6 +108,7 @@ class Review(View):
 
         return JsonResponse({"movie_random" : movie_random},status=200)
 
+    @login_confirm
     def post(self, request):
         try:
             data   = json.loads(request.body)
@@ -132,3 +135,22 @@ class Review(View):
 
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"})
+
+class StarDistribution(View):
+    @login_confirm
+    def get(self, request):
+        user              = request.user
+        user_movies       = RatingMovie.objects.filter(user=user)
+        rating_count      = len(user_movies)
+        rating_highest    = float(user_movies.order_by("-rating")[0].rating)
+        rating_average    = float(user_movies.aggregate(Avg("rating"))['rating__avg'])
+        star_distribution = [{rating : len(RatingMovie.objects.filter(user=user, rating=rating))} for rating in numpy.arange(0.5, 5.5, 0.5)]
+
+        result = {
+                "rating_count"      : rating_count,
+                "rating_highest"    : rating_highest,
+                "rating_average"    : rating_average,
+                "star_distribution" : star_distribution
+                }
+
+        return JsonResponse({"result" : result}, status=200)
