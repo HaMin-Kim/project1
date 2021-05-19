@@ -139,9 +139,9 @@ class Review(View):
 class FavoriteGenre(View):
     @login_confirm
     def get(self, request):
-        user = request.user
+        user       = request.user
         genre_list = Genre.objects.all()
-        rating = RatingMovie.objects.filter
+        rating     = RatingMovie.objects.filter
 
         genre_average = {
             genre.name : (
@@ -161,6 +161,7 @@ class FavoriteGenre(View):
                 }
                 for genre in genre_average
                 ]
+
         return JsonResponse({"favorite_genre" : favorite_genre}, status = 200)
 
 class StarDistribution(View):
