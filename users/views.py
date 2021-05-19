@@ -7,10 +7,7 @@ import numpy
 
 from django.http      import JsonResponse
 from django.views     import View
-<<<<<<< HEAD
 from django.db.models import Avg
-=======
->>>>>>> main
 
 from users.models  import User, RatingMovie, WishMovie
 from movies.models import Movie, Genre
@@ -143,9 +140,10 @@ class StarDistribution(View):
     @login_confirm
     def get(self, request):
         user              = request.user
-        rating_count      = len(RatingMovie.objects.filter(user = user))
-        rating_highest    = float(RatingMovie.objects.filter(user=user).order_by("-rating")[0].rating)
-        rating_average    = float(RatingMovie.objects.filter(user=user).aggregate(Avg("rating"))['rating__avg'])
+        user_movies       = RatingMovie.objects.filter(user=user)
+        rating_count      = len(user_movies)
+        rating_highest    = float(user_movies.order_by("-rating")[0].rating)
+        rating_average    = float(user_movies.aggregate(Avg("rating"))['rating__avg'])
         star_distribution = [{rating : len(RatingMovie.objects.filter(user=user, rating=rating))} for rating in numpy.arange(0.5, 5.5, 0.5)]
 
         result = {
