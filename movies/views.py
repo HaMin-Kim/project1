@@ -26,7 +26,9 @@ class MovieCommentView(View):
 				user    = request.user,
 				comment = data["comment"]
 			)
-			return JsonResponse({'MESSAGE': 'SUCCESS'}, status =201)
+		
+			comment_id = {"id":comment.id}
+			return JsonResponse({'comment_id': comment.id}, status =201)
 
 		except KeyError:
 			return JsonResponse({"message": "KEY_ERROR"}, status=400)
