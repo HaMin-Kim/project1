@@ -99,6 +99,7 @@ class StarDistribution(View):
 
         return JsonResponse({"result" : result}, status=200)
 
+#추가기능 구현 사항
 class Review(View):
     @login_confirm
     def get(self, request):
@@ -110,6 +111,7 @@ class Review(View):
         movie_list    = Movie.objects.all()
         genre_id      = request.GET.get("genre_id", None)
         
+        #쿼리 파라미터로 받은 장르 id 값이 있을 경우
         if genre_id:
             genre       = Genre.objects.get(id = genre_id)
             genre_movie = [
@@ -124,9 +126,10 @@ class Review(View):
                     for movie in Movie.objects.filter(genre = genre)\
                         if not RatingMovie.objects.filter(movie = movie, user = user).exists()
                         ]
-                        
+
             return JsonResponse({"genre_movie" : genre_movie}, status=200)
             
+        #쿼리 파라미터로 받은 값이 없을 경우 그대로 랜덤 영화 목록 반환    
         movie_random = [
             {
                 "movie_id"     : movie.id,
