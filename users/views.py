@@ -7,7 +7,7 @@ import numpy
 
 from django.http      import JsonResponse
 from django.views     import View
-from django.db.models import Avg
+from django.db.models import Avg, Q
 
 from users.models  import User, RatingMovie, WishMovie
 from movies.models import Movie, Genre
@@ -110,6 +110,7 @@ class Review(View):
         rating_movies = len(RatingMovie.objects.filter(user=user))
         movie_list    = Movie.objects.all()
         genre_id      = request.GET.get("genre_id", None)
+        q             = Q(user = user)
         
         #쿼리 파라미터로 받은 장르 id 값이 있을 경우
         if genre_id:
@@ -124,7 +125,7 @@ class Review(View):
                     "thumbnail"    : movie.thumbnail_img
                     }
                     for movie in Movie.objects.filter(genre = genre)\
-                        if not RatingMovie.objects.filter(movie = movie, user = user).exists()
+                        if not RatingMovie.objects.filter(q, movie=movie).exists()
                         ]
 
             return JsonResponse({"genre_movie" : genre_movie}, status=200)
@@ -140,7 +141,7 @@ class Review(View):
                 "thumbnail"    : movie.thumbnail_img
                 } 
                 for movie_id in random_list for movie in movie_list\
-                    if movie.id == movie_id if not RatingMovie.objects.filter(movie = movie.id, user = user).exists()
+                    if movie.id == movie_id if not RatingMovie.objects.filter(q, movie = movie.id).exists()
                     ]
         
         movie_random.append({"rating_movies": rating_movies})
@@ -154,9 +155,10 @@ class Review(View):
             rating = float(data["rating"])
             movie  = Movie.objects.get(id = data["movie"])
             user   = request.user
+            q      = Q(movie = movie) & Q(user = user)
 
-            if RatingMovie.objects.filter(movie = movie, user = user).exists():
-                user_movie = RatingMovie.objects.get(movie = movie, user = user)
+            if RatingMovie.objects.filter(q).exists():
+                user_movie = RatingMovie.objects.get(q)
 
                 if user_movie.rating == rating:
                     user_movie.delete()
@@ -168,7 +170,8 @@ class Review(View):
 
                 return JsonResponse({"MESSAGE" : "UPDATE_SUCCESS"}, status=201)
 
-            RatingMovie.objects.create(movie = movie, user = user, rating=rating)
+            RatingMovie.objects.create(movie=movie, user=user, rating=rating)
+
             return JsonResponse({"MESSAGE" : "CREATE_SUCCESS"}, status=201)
 
 
