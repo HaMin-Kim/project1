@@ -4,7 +4,7 @@ from django.http      import JsonResponse
 
 from users.utils      import login_confirm
 from movies.models    import Movie, Comment, Like, Genre, MovieGenre
-from users.models     import WishMovie, User
+from users.models     import User, RatingMovie, WishMovie
 
 class MovieCommentView(View):
 	@login_confirm
@@ -158,6 +158,34 @@ class MovieInfoView(View):
 			return JsonResponse({'movie_information': movie_information}, status = 200)
 		
 		return JsonResponse({"message": "NO_MOVIE"}, status = 404)
+
+class Rating(View):
+    @login_confirm
+    def post(self, request, movie_id):
+        try:
+            data   = json.loads(request.body)
+            rating = float(data["rating"])
+            user   = request.user
+            movie  = Movie.objects.get(id = movie_id)
+            
+            if RatingMovie.objects.filter(movie = movie, user = user).exists():
+                user_movie = RatingMovie.objects.get(movie = movie, user = user)
+                
+                if user_movie.rating == rating:
+                    user_movie.delete()
+                    
+                    return JsonResponse({"MESSAGE" : "DELETE_SUCCESS"}, status=204)
+
+                user_movie.rating = rating
+                user_movie.save()
+                return JsonResponse({"MESSAGE" : "UPDATE_SUCCESS"}, status=201)
+                
+            RatingMovie.objects.create(movie = movie, user = user, rating=rating)
+            
+            return JsonResponse({"MESSAGE" : "CREATE_SUCCESS"}, status=201)
+
+        except KeyError:
+            return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status=400)
 
 class Wish(View):
 	@login_confirm
