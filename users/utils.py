@@ -7,7 +7,7 @@ from my_settings  import SECRET
 
 
 def login_confirm(original_function):
-    def wrapper(self, request):
+    def wrapper(self, request, *args, **kwargs):
         try:
             token = request.headers.get("Authorization", None)
 
@@ -19,7 +19,7 @@ def login_confirm(original_function):
 
                 user          = User.objects.get(id=token_payload['user_id'])
                 request.user  = user
-                return original_function(self, request)
+                return original_function(self, request, *args, **kwargs)
 
             return JsonResponse({'MESSAGE': 'NEED_LOGIN'}, status=401)
 
