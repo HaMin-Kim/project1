@@ -71,6 +71,7 @@ class MovieCommentView(View):
 		
 	@login_confirm
 	def get(self, request, movie_id, comment_id):
+		movie         = Movie.objects.get(id = movie_id)
 		comment_check = Comment.objects.filter(user = request.user)
 		
 		# 댓글이 없는 경우
@@ -85,7 +86,17 @@ class MovieCommentView(View):
 					'my_name'   : comment.user.name,
 					'my_comment': comment.comment,
 				}
-		return JsonResponse({'my_comment_data': my_comment_data}, status=200)
+
+		other_comment_data = [ {
+					'id'       : comment.id,
+					'user_id'  : comment.user.id,
+					'user_name': comment.user.name,
+					'comment'  : comment.comment,
+					'likes'    : comment.like_set.count()
+				} 
+				for comment in Comment.objects.filter(movie=movie)]
+	
+		return JsonResponse({'my_comment_data': my_comment_data, 'other_comment_data': other_comment_data}, status=200)
 
 
 class CommentLikeView(View):
