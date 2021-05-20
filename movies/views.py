@@ -12,6 +12,7 @@ class MovieInfoView(View):
 		ranking         = request.GET.get('ranking')
 		provider        = request.GET.get('provider')
 		results = []
+		q = Q()
 
 		if ranking == 'box-office':
 			LIMIT = 25
@@ -28,7 +29,7 @@ class MovieInfoView(View):
 		
 		if provider == 'netflix':
 			LIMIT = 10
-			netflix_random_data = Movie.objects.filter(netflix=True).values(
+			netflix_random_data = Movie.objects.filter(Q(netflix=True)).values(
 						'id',
 						'korean_title', 
 						'country', 
@@ -41,7 +42,7 @@ class MovieInfoView(View):
 
 		if provider == 'watcha':
 			LIMIT = 10
-			watcha_random_data = Movie.objects.filter(watcha=True).values(
+			watcha_random_data = Movie.objects.filter(Q(watcha=True)).values(
 						'id',
 						'korean_title',
                                                 'country',
@@ -54,8 +55,3 @@ class MovieInfoView(View):
 
 		return JsonResponse({'MESSAGE': results}, status = 200)
 
-# 하나의 api에 3개의 엔드포인트를 만들어야한다.
-# return 값이 3개다
-# 박승오피스 순위 대로 나열할 경우
-# 넷플릭스 추천 대로
-# 왓챠 추천대
