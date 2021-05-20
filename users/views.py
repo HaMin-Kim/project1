@@ -7,7 +7,7 @@ import numpy
 
 from django.http      import JsonResponse
 from django.views     import View
-from django.db.models import Avg
+from django.db.models import Avg, Q
 
 from users.models  import User, RatingMovie, WishMovie
 from movies.models import Movie, Genre
@@ -158,25 +158,21 @@ class FavoriteGenre(View):
         user       = request.user
         genre_list = Genre.objects.all()
         rating     = RatingMovie.objects.filter
+        genre_get  = Genre.objects.get
+        q          = Q(user = user)
 
-        genre_average = {
-            genre.name : (
-                float(rating(user=user,movie__genre__name = genre.name).aggregate(Avg("rating"))["rating__avg"]),
-                len(rating(user=user, movie__genre__name = genre.name)))\
-                    for genre in genre_list if rating(user=user, movie__genre__name = genre.name).exists()
-                    }
-                    
-        genre_average = sorted(genre_average.items(), key=lambda x: x[0])
-        
         favorite_genre = [
             {
-                "id"      : Genre.objects.get(name = genre[0]).id,
-                "genre"   : genre[0],
-                "average" : genre[1][0]*20,
-                "count"   : genre[1][1]
-                }
-                for genre in genre_average
+                "id"      : genre_get(name = genre.name).id,
+                "genre"   : genre_get(name = genre.name).name,
+                "average" : float(rating(q, movie__genre__name = genre.name).aggregate(Avg("rating"))["rating__avg"])*20,
+                "count"   : len(rating(q, movie__genre__name = genre.name))
+                } 
+                for genre in genre_list 
+                if rating(q, movie__genre__name = genre.name).exists()
                 ]
+                    
+        favorite_genre = sorted(favorite_genre, key=lambda favorite_genre:(favorite_genre["average"]), reverse=True)
 
         return JsonResponse({"favorite_genre" : favorite_genre}, status = 200)
 
