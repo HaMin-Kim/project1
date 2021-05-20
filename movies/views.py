@@ -13,9 +13,21 @@ class MovieInfoView(View):
 		provider        = request.GET.get('provider')
 		results = []
 		q = Q()
-
 		if ranking == 'box-office':
+			q = ranking
 			LIMIT = 25
+			orderyby = movie_ranking_data
+
+		if provider == 'netflix':
+			q = Q(netflix = True)
+			LIMIT = 10
+			orderby = ?
+
+		if provider == 'watcha':
+			q = Q(watcha = True)
+			LIMIT = 10
+
+
 			movie_ranking_data = Movie.objects.values(
 						'id',
                                                 'korean_title',
