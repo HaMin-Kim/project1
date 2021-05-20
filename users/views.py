@@ -80,6 +80,26 @@ class MyPage(View):
 
         return JsonResponse({"result" : result}, status = 200)
 
+class StarDistribution(View):
+    @login_confirm
+    def get(self, request):
+        user              = request.user
+        user_movies       = RatingMovie.objects.filter(user=user)
+        rating_count      = len(user_movies)
+        rating_highest    = float(user_movies.order_by("-rating")[0].rating)
+        rating_average    = float(user_movies.aggregate(Avg("rating"))['rating__avg'])
+        star_distribution = [{rating : len(RatingMovie.objects.filter(user=user, rating=rating))} for rating in numpy.arange(0.5, 5.5, 0.5)]
+
+        result = {
+                "rating_count"      : rating_count,
+                "rating_highest"    : rating_highest,
+                "rating_average"    : rating_average,
+                "star_distribution" : star_distribution
+                }
+
+        return JsonResponse({"result" : result}, status=200)
+
+#추가기능 구현 사항
 class Review(View):
     @login_confirm
     def get(self, request):
@@ -131,9 +151,10 @@ class Review(View):
             rating = float(data["rating"])
             movie  = Movie.objects.get(id = data["movie"])
             user   = request.user
+            q      = Q(movie = movie) & Q(user = user)
 
-            if RatingMovie.objects.filter(movie = movie, user = user).exists():
-                user_movie = RatingMovie.objects.get(movie = movie, user = user)
+            if RatingMovie.objects.filter(q).exists():
+                user_movie = RatingMovie.objects.get(q)
 
                 if user_movie.rating == rating:
                     user_movie.delete()
@@ -145,11 +166,13 @@ class Review(View):
 
                 return JsonResponse({"MESSAGE" : "UPDATE_SUCCESS"}, status=201)
 
-            RatingMovie.objects.create(movie = movie, user = user, rating=rating)
+            RatingMovie.objects.create(movie=movie, user=user, rating=rating)
+
             return JsonResponse({"MESSAGE" : "CREATE_SUCCESS"}, status=201)
 
 
         except KeyError:
+            
             return JsonResponse({"MESSAGE" : "KEY_ERROR"})
 
 class FavoriteGenre(View):
