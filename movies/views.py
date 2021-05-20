@@ -1,11 +1,10 @@
 import json
-
 from django.views     import View
 from django.http      import JsonResponse
 
 from users.utils      import login_confirm
 from movies.models    import Movie, Comment, Like, Genre, MovieGenre
-from users.models     import User
+from users.models     import WishMovie, User
 
 class MovieCommentView(View):
 	@login_confirm
@@ -120,7 +119,6 @@ class CommentLikeView(View):
 		except KeyError:
 			return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
-
 class MovieInfoView(View):
 	def get(self, request, movie_id):
 		if Movie.objects.filter(id = movie_id).exists():
@@ -151,12 +149,27 @@ class MovieInfoView(View):
                                 'running_time'  : movie.running_time,
                                 'discription'   : movie.discription,
                                 'thumbnail_img' : movie.thumbnail_img,
-                                'background_img': movie.background_img, 
-				'genre'         : list(movie.genre.values('name')),
-				'comments'      : movie_comments,
-				'similar_movies': similar_movies,
-				}
+                                'background_img': movie.background_img,
+								'genre'         : list(movie.genre.values('name')),
+								'comments'      : movie_comments,
+								'similar_movies': similar_movies,
+								}
 
 			return JsonResponse({'movie_information': movie_information}, status = 200)
 		
 		return JsonResponse({"message": "NO_MOVIE"}, status = 404)
+
+class Wish(View):
+	@login_confirm
+	def post(self, request, movie_id):
+		user  = request.user
+		movie = Movie.objects.get(id = movie_id)
+		
+		if WishMovie.objects.filter(user = user, movie = movie).exists():
+			WishMovie.objects.get(user = user, movie = movie).delete()
+			
+			return JsonResponse({"MESSAGE" : "DELETE_SUCCESS"}, status=204)
+			
+		WishMovie.objects.create(user = user, movie = movie)
+		
+		return JsonResponse({"MESSAGE" : "CREATE_SUCCESS"}, status=201)
