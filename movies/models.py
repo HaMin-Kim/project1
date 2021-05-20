@@ -2,7 +2,7 @@ from django.db import models
 
 class Movie(models.Model):
     korean_title   = models.CharField(max_length = 45)
-    english_title  = models.CharField(max_length = 45)
+    english_title  = models.CharField(max_length = 45, null=True)
     country        = models.CharField(max_length = 45)
     release_date   = models.DateField(null = True)
     running_time   = models.IntegerField()
@@ -12,7 +12,7 @@ class Movie(models.Model):
     background_img = models.URLField()
     netflix        = models.BooleanField(default = False)
     watcha         = models.BooleanField(default = False)
-    category       = models.ForeignKey('Category', on_delete = models.CASCADE)
+    category       = models.ForeignKey('Category', models.SET_NULL, null=True)
     genre          = models.ManyToManyField('Genre', through = 'MovieGenre')
     director       = models.ManyToManyField('Director', through = 'MovieDirector')
     actor          = models.ManyToManyField('Actor', through = 'MovieActor')

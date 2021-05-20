@@ -7,7 +7,7 @@ import numpy
 
 from django.http      import JsonResponse
 from django.views     import View
-from django.db.models import Avg
+from django.db.models import Avg, Q
 
 from users.models  import User, RatingMovie, WishMovie
 from movies.models import Movie, Genre
@@ -89,24 +89,40 @@ class Review(View):
         rating        = 0
         rating_movies = len(RatingMovie.objects.filter(user=user))
         movie_list    = Movie.objects.all()
-
-        movie_random = [
+        genre_id      = request.GET.get("genre_id", None)
+        
+        if genre_id:
+            genre = Genre.objects.get(id = genre_id)
+            genre_movie = [
                 {
                     "movie_id"     : movie.id,
                     "title"        : movie.korean_title,
                     "country"      : movie.country,
                     "release_date" : movie.release_date,
                     "rating"       : rating,
-                    "genre"        : movie.genre.name,
                     "thumbnail"    : movie.thumbnail_img
                     }
-                for movie_id in random_list for movie in movie_list\
-                if movie.id == movie_id if not RatingMovie.objects.filter(movie = movie.id, user=user).exists()
+                    for movie in Movie.objects.filter(genre = genre)\
+                        if not RatingMovie.objects.filter(movie = movie, user = user).exists()
                         ]
-
+            return JsonResponse({"genre_movie" : genre_movie}, status=200)
+            
+        movie_random = [
+            {
+                "movie_id"     : movie.id,
+                "title"        : movie.korean_title,
+                "country"      : movie.country,
+                "release_date" : movie.release_date,
+                "rating"       : rating,
+                "thumbnail"    : movie.thumbnail_img
+                } 
+                for movie_id in random_list for movie in movie_list\
+                    if movie.id == movie_id if not RatingMovie.objects.filter(movie = movie.id, user = user).exists()
+                    ]
+        
         movie_random.append({"rating_movies": rating_movies})
 
-        return JsonResponse({"movie_random" : movie_random},status=200)
+        return JsonResponse({"movie_random" : movie_random}, status=200)
 
     @login_confirm
     def post(self, request):
@@ -135,6 +151,33 @@ class Review(View):
 
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"})
+
+class FavoriteGenre(View):
+    @login_confirm
+    def get(self, request):
+        user       = request.user
+        genre_list = Genre.objects.all()
+
+        favorite_genre = [
+            {
+                "id"      : Genre.objects.get(name = genre.name).id,
+                "genre"   : Genre.objects.get(name = genre.name).name,
+                "average" : float(RatingMovie.objects.filter(user = user, movie__genre__name = genre.name).aggregate(Avg("rating"))["rating__avg"])*20,
+                "count"   : len(RatingMovie.objects.filter(user = user, movie__genre__name = genre.name))
+                } 
+                for genre in genre_list 
+                if RatingMovie.objects.filter(user=user, movie__genre__name = genre.name).exists()
+                ]
+                    
+        favorite_genre = sorted(favorite_genre, key=lambda favorite_genre:(favorite_genre["average"]), reverse=True)
+
+        return JsonResponse({"favorite_genre" : favorite_genre}, status = 200)
+
+class GenreList(View):
+    def get(self, reuqest):
+        genre_list = {genre.id : genre.name for genre in Genre.objects.all()}
+
+        return JsonResponse({"genre_list" : genre_list}, status=200)
 
 class StarDistribution(View):
     @login_confirm
