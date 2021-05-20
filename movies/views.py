@@ -7,7 +7,7 @@ from django.db.models import Q
 from users.utils      import login_confirm
 from movies.models    import Movie, Comment
 
-class MovieInfoView(View):
+class MovieMainView(View):
 	def get(self, request):
 		ranking         = request.GET.get('ranking')
 		provider        = request.GET.get('provider')
