@@ -110,28 +110,13 @@ class Review(View):
         rating_movies = len(RatingMovie.objects.filter(user=user))
         movie_list    = Movie.objects.all()
         genre_id      = request.GET.get("genre_id", None)
-        q             = Q(user = user)
         
         #쿼리 파라미터로 받은 장르 id 값이 있을 경우
-        if genre_id:
-            genre       = Genre.objects.get(id = genre_id)
-            genre_movie = [
-                {
-                    "movie_id"     : movie.id,
-                    "title"        : movie.korean_title,
-                    "country"      : movie.country,
-                    "release_date" : movie.release_date,
-                    "rating"       : rating,
-                    "thumbnail"    : movie.thumbnail_img
-                    }
-                    for movie in Movie.objects.filter(genre = genre)\
-                        if not RatingMovie.objects.filter(q, movie=movie).exists()
-                        ]
+        q = Q(genre=genre_id)
 
-            return JsonResponse({"genre_movie" : genre_movie}, status=200)
-            
-        #쿼리 파라미터로 받은 값이 없을 경우 그대로 랜덤 영화 목록 반환    
-        movie_random = [
+        # genre      = Genre.objects.get(id = genre_id)
+
+        movie_list = [
             {
                 "movie_id"     : movie.id,
                 "title"        : movie.korean_title,
@@ -139,14 +124,30 @@ class Review(View):
                 "release_date" : movie.release_date,
                 "rating"       : rating,
                 "thumbnail"    : movie.thumbnail_img
-                } 
-                for movie_id in random_list for movie in movie_list\
-                    if movie.id == movie_id if not RatingMovie.objects.filter(q, movie = movie.id).exists()
-                    ]
+                }
+                for movie in Movie.objects.filter(q) if not RatingMovie.objects.filter(user=user, movie=movie).exists() if q is None for movie_id in random_list if movie.id == movie_id]
+        return JsonResponse({"movie_list" : movie_list}, status=200)
+            
+            # 1. for문
+            # 2. if문 - 3. if문
+            #     3-1. for문
+            #     3-2. if문
+        #쿼리 파라미터로 받은 값이 없을 경우 그대로 랜덤 영화 목록 반환    
+        # movie_random = [
+        #     {
+        #         "movie_id"     : movie.id,
+        #         "title"        : movie.korean_title,
+        #         "country"      : movie.country,
+        #         "release_date" : movie.release_date,
+        #         "rating"       : rating,
+        #         "thumbnail"    : movie.thumbnail_img
+        #         } 
+        #         for movie_id in random_list for movie in Movie.objects.all() if movie.id == movie_id if not RatingMovie.objects.filter(q, movie = movie.id).exists()
+        #             ]
         
-        movie_random.append({"rating_movies": rating_movies})
+        # movie_random.append({"rating_movies": rating_movies})
 
-        return JsonResponse({"movie_random" : movie_random}, status=200)
+        # return JsonResponse({"movie_random" : movie_random}, status=200)
 
     @login_confirm
     def post(self, request):
