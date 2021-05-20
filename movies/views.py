@@ -24,17 +24,6 @@ class MovieInfoView(View):
 				if WishMovie.objects.get(user = user, movie = movie.id).exists():
 					wish_check   = 1
 
-			movie_comments = [
-				{
-				 	'id'       : comment.id,
-					'user_id'  : comment.user.id,
-					'user_name': comment.user.name,
-					'comment'  : comment.comment,
-					'likes'    : comment.like_set.count()
-				}
-				for comment in Comment.objects.filter(movie=movie)
-			]
-			
 			
 			LIMIT = 3
 			similar_movies = [list(similar_movie.movie_set.values(
@@ -54,7 +43,6 @@ class MovieInfoView(View):
                                 'thumbnail_img' : movie.thumbnail_img,
                                 'background_img': movie.background_img, 
 				'genre'         : list(movie.genre.values('name')),
-				'comments'      : movie_comments,
 				'similar_movies': similar_movies,
 				}
 
