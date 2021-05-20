@@ -159,17 +159,16 @@ class FavoriteGenre(View):
         genre_list = Genre.objects.all()
         rating     = RatingMovie.objects.filter
         genre_get  = Genre.objects.get
-        q          = Q(user = user)
 
         favorite_genre = [
             {
                 "id"      : genre_get(name = genre.name).id,
                 "genre"   : genre_get(name = genre.name).name,
-                "average" : float(rating(q, movie__genre__name = genre.name).aggregate(Avg("rating"))["rating__avg"])*20,
-                "count"   : len(rating(q, movie__genre__name = genre.name))
+                "average" : float(rating(user = user, movie__genre__name = genre.name).aggregate(Avg("rating"))["rating__avg"])*20,
+                "count"   : len(rating(user = user, movie__genre__name = genre.name))
                 } 
                 for genre in genre_list 
-                if rating(q, movie__genre__name = genre.name).exists()
+                if rating(user=user, movie__genre__name = genre.name).exists()
                 ]
                     
         favorite_genre = sorted(favorite_genre, key=lambda favorite_genre:(favorite_genre["average"]), reverse=True)
