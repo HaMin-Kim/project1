@@ -172,4 +172,51 @@ class Review(View):
 
 
         except KeyError:
+            
             return JsonResponse({"MESSAGE" : "KEY_ERROR"})
+
+class FavoriteGenre(View):
+    @login_confirm
+    def get(self, request):
+        user       = request.user
+        genre_list = Genre.objects.all()
+
+        favorite_genre = [
+            {
+                "id"      : Genre.objects.get(name = genre.name).id,
+                "genre"   : Genre.objects.get(name = genre.name).name,
+                "average" : float(RatingMovie.objects.filter(user = user, movie__genre__name = genre.name).aggregate(Avg("rating"))["rating__avg"])*20,
+                "count"   : len(RatingMovie.objects.filter(user = user, movie__genre__name = genre.name))
+                } 
+                for genre in genre_list 
+                if RatingMovie.objects.filter(user=user, movie__genre__name = genre.name).exists()
+                ]
+                    
+        favorite_genre = sorted(favorite_genre, key=lambda favorite_genre:(favorite_genre["average"]), reverse=True)
+
+        return JsonResponse({"favorite_genre" : favorite_genre}, status = 200)
+
+class GenreList(View):
+    def get(self, reuqest):
+        genre_list = {genre.id : genre.name for genre in Genre.objects.all()}
+
+        return JsonResponse({"genre_list" : genre_list}, status=200)
+
+class StarDistribution(View):
+    @login_confirm
+    def get(self, request):
+        user              = request.user
+        user_movies       = RatingMovie.objects.filter(user=user)
+        rating_count      = len(user_movies)
+        rating_highest    = float(user_movies.order_by("-rating")[0].rating)
+        rating_average    = float(user_movies.aggregate(Avg("rating"))['rating__avg'])
+        star_distribution = [{rating : len(RatingMovie.objects.filter(user=user, rating=rating))} for rating in numpy.arange(0.5, 5.5, 0.5)]
+
+        result = {
+                "rating_count"      : rating_count,
+                "rating_highest"    : rating_highest,
+                "rating_average"    : rating_average,
+                "star_distribution" : star_distribution
+                }
+
+        return JsonResponse({"result" : result}, status=200)
