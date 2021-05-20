@@ -19,9 +19,10 @@ class MovieInfoView(View):
 			movie_ranking_data = Movie.objects.values(
 						'id',
                                                 'korean_title',
+						'english_title',
                                                 'country',
                                                 'release_date',
-                                                'thumbnail_img'
+                                                'thumbnail_img',
 						'netflix',
 						'watcha',
                                                 ).order_by('-audience_count')[:LIMIT]
@@ -32,6 +33,7 @@ class MovieInfoView(View):
 			netflix_random_data = Movie.objects.filter(Q(netflix=True)).values(
 						'id',
 						'korean_title', 
+						'english_title',
 						'country', 
 						'release_date',
 						'thumbnail_img',
@@ -45,6 +47,7 @@ class MovieInfoView(View):
 			watcha_random_data = Movie.objects.filter(Q(watcha=True)).values(
 						'id',
 						'korean_title',
+						'english_title',
                                                 'country',
                                                 'release_date',
                                                 'thumbnail_img',
