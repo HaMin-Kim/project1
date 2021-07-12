@@ -4,6 +4,7 @@ import jwt
 import re
 import random
 import numpy
+from datetime import datetime, timedelta
 
 from django.http      import JsonResponse
 from django.views     import View
@@ -63,7 +64,10 @@ class SignIn(View):
             if not bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
                 return JsonResponse({"MESSAGE" : "INVALID_PASSWORD"}, status=400)
 
-            token = jwt.encode({"user_id" : user.id}, SECRET, algorithm="HS256")
+            access_token = jwt.encode({"user_id" : user.id, 'exp' : datetime.utcnow() + timedelta(days=3)}, SECRET, algorithm="HS256")
+            refresh_token = jwt.encode({"user_id" : user.id, 'exp' : datetime.utcnow() + timedelta(days=3)}, SECRET, algorithm="HS256")
+            JsonResponse.set_cookie("refresh_token", refresh_token)
+
 
             return JsonResponse({"MESSAGE" : "SUCCESS", "token" : token}, status=200)
 

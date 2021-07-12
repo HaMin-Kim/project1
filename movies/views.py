@@ -183,7 +183,7 @@ class MovieInfoView(View):
 				if rating_movie.exists():
 					star_check = rating_movie.rating
 
-				if WishMovie.objects.get(user = user, movie = movie.id).exists():
+				if WishMovie.objects.filter(user = user, movie = movie.id).exists():
 					wish_check   = 1
 
 			
