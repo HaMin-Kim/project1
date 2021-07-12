@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from users.models import User
 from my_settings  import SECRET
 
-#주석을 달아보자
+#주석을 달아보자2
 def login_confirm(original_function):
     def wrapper(self, request, *args, **kwargs):
         try:
